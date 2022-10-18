@@ -9,6 +9,7 @@ use panic_halt as _; // you can put a breakpoint on `rust_begin_unwind` to catch
 use cortex_m_rt::entry;
 use rtt_target::{rprintln, rtt_init_print};
 
+use hal::prelude::*;
 use nrf52840_hal as hal;
 use rubble::beacon::Beacon;
 use rubble::link::{ad_structure::AdStructure, MIN_PDU_BUF};
@@ -24,12 +25,9 @@ fn main() -> ! {
 
     let nrf52 = hal::pac::Peripherals::take().unwrap();
 
-    let _clocks = hal::clocks::Clocks::new(nrf52.CLOCK).enable_ext_hfosc();
-
-    // Initialize (enable) the monotonic timer (CYCCNT)
-    // let mut core = ctx.core;
-    // core.DCB.enable_trace();
-    // core.DWT.enable_cycle_counter();
+    // Enable external HiFreq oscillator. This is needed for Bluetooth
+    // to work.
+    hal::clocks::Clocks::new(nrf52.CLOCK).enable_ext_hfosc();
 
     // Determine device address
     let device_address = get_device_address();
@@ -45,8 +43,12 @@ fn main() -> ! {
     )
     .unwrap();
 
-    rprintln!("broadcast");
-    beacon.broadcast(&mut radio);
+    // Set up a timer
+    let mut timer = hal::timer::Timer::new(nrf52.TIMER0);
 
-    loop {}
+    loop {
+        rprintln!("broadcast beacon");
+        beacon.broadcast(&mut radio);
+        timer.delay_ms(1000_u16);
+    }
 }
