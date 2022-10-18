@@ -6,20 +6,47 @@ use panic_halt as _; // you can put a breakpoint on `rust_begin_unwind` to catch
                      // use panic_abort as _; // requires nightly
                      // use panic_itm as _; // logs messages over ITM; requires ITM support
                      // use panic_semihosting as _; // logs messages to the host stderr; requires a debugger
-
-use cortex_m::asm;
 use cortex_m_rt::entry;
 use rtt_target::{rprintln, rtt_init_print};
+
+use nrf52840_hal as hal;
+use rubble::beacon::Beacon;
+use rubble::link::{ad_structure::AdStructure, MIN_PDU_BUF};
+use rubble_nrf5x::radio::{BleRadio, PacketBuffer};
+use rubble_nrf5x::utils::get_device_address;
+
+static mut TX_BUF: PacketBuffer = [0; MIN_PDU_BUF];
+static mut RX_BUF: PacketBuffer = [0; MIN_PDU_BUF];
 
 #[entry]
 fn main() -> ! {
     rtt_init_print!();
 
-    rprintln!("hello");
+    let nrf52 = hal::pac::Peripherals::take().unwrap();
 
-    asm::nop(); // To not have main optimize to abort in release mode, remove when you add code
+    let _clocks = hal::clocks::Clocks::new(nrf52.CLOCK).enable_ext_hfosc();
 
-    loop {
-        // your code goes here
-    }
+    // Initialize (enable) the monotonic timer (CYCCNT)
+    // let mut core = ctx.core;
+    // core.DCB.enable_trace();
+    // core.DWT.enable_cycle_counter();
+
+    // Determine device address
+    let device_address = get_device_address();
+
+    // Rubble currently requires an RX buffer even though the radio is only used as a TX-only beacon.
+    let mut radio = BleRadio::new(nrf52.RADIO, &nrf52.FICR, unsafe { &mut TX_BUF }, unsafe {
+        &mut RX_BUF
+    });
+
+    let beacon = Beacon::new(
+        device_address,
+        &[AdStructure::CompleteLocalName("Rusty Beacon (nRF52)")],
+    )
+    .unwrap();
+
+    rprintln!("broadcast");
+    beacon.broadcast(&mut radio);
+
+    loop {}
 }
