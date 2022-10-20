@@ -2,15 +2,16 @@
 #![no_main]
 #![feature(type_alias_impl_trait)]
 
-// use embassy_nrf::config::{Config, HfclkSource};
+mod radio;
+mod utils;
+
 use embassy_executor::Spawner;
+use embassy_nrf::config::{Config, HfclkSource};
 use embassy_time::{Duration, Timer};
-use nrf52840_dk_bsp::hal;
+use radio::{BleRadio, PacketBuffer};
 use rubble::beacon::Beacon;
 use rubble::link::{ad_structure::AdStructure, MIN_PDU_BUF};
-use rubble_nrf5x::radio::{BleRadio, PacketBuffer};
-use rubble_nrf5x::utils::get_device_address;
-// pick a panicking behavior
+use utils::get_device_address;
 use {defmt_rtt as _, panic_probe as _};
 
 static mut TX_BUF: PacketBuffer = [0; MIN_PDU_BUF];
@@ -18,11 +19,12 @@ static mut RX_BUF: PacketBuffer = [0; MIN_PDU_BUF];
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
-    // let mut config = Config::default();
-    // config.hfclk_source = HfclkSource::ExternalXtal;
-    // embassy_nrf::init(config);
+    let mut config = Config::default();
+    config.hfclk_source = HfclkSource::ExternalXtal;
+    embassy_nrf::init(config);
 
-    let nrf52 = hal::pac::Peripherals::take().unwrap();
+    // this shouldn't be possible!
+    let nrf52 = embassy_nrf::pac::Peripherals::take().unwrap();
 
     // Determine device address
     let device_address = get_device_address();
