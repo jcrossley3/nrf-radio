@@ -5,6 +5,7 @@
 mod radio;
 mod utils;
 
+use defmt::info;
 use embassy_executor::Spawner;
 use embassy_nrf::config::{Config, HfclkSource};
 use embassy_time::{Duration, Timer};
@@ -41,6 +42,7 @@ async fn main(_spawner: Spawner) {
     .unwrap();
 
     loop {
+        info!("beaconing");
         beacon.broadcast(&mut radio);
         Timer::after(Duration::from_secs(1)).await;
     }
