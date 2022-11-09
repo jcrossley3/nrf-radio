@@ -13,7 +13,7 @@ rubble = { version = "0.0.4", default-features = false }
 
 embassy-executor = { version = "0.1.0", default-features = false, features = ["defmt", "nightly", "integrated-timers"] }
 embassy-time = { version = "0.1.0", default-features = false, features = ["defmt", "defmt-timestamp-uptime", "nightly"] }
-embassy-nrf = { version = "0.1.0", default-features = false, features = ["defmt", "nrf52840", "time-driver-rtc1", "gpiote", "nightly", "unstable-pac"] }
+embassy-nrf = { version = "0.1.0", default-features = false, features = ["defmt", "nrf52833", "time-driver-rtc1", "gpiote", "nightly", "unstable-pac"] }
 
 defmt = "0.3"
 defmt-rtt = "0.3"

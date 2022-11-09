@@ -8,6 +8,9 @@
 [target.thumbv7em-none-eabihf]
 runner = "probe-run --chip nRF52840_xxAA"
 
+[target.thumbv7em-none-eabi]
+runner = "probe-run --chip nRF52833_xxAA"
+
 [build]
 # Pick ONE of these compilation targets
 # target = "thumbv6m-none-eabi"        # Cortex-M0 and Cortex-M0+
